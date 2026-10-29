@@ -1,4 +1,4 @@
-import { useState, useSyncExternalStore } from "react";
+import { useState, useSyncExternalStore, type ReactNode } from "react";
 import { INTERVALS } from "../config";
 import { useDragReorder } from "../hooks/useDragReorder";
 import { pct, sign, usd } from "../lib/format";
@@ -82,13 +82,14 @@ export function Overview({ tickers, onAdd, onRemove, onMove }: Props) {
   const [sort, setSort] = useState<Sort>(null);
   const { draggingIndex, onGripPointerDown } = useDragReorder(onMove, "[data-drag-row]");
 
-  const header = (key: Key, label: string) => (
+  const header = (key: Key, label: string, prefix?: ReactNode) => (
     <th
       key={key}
       className={sort?.key === key ? "sorted" : ""}
       aria-sort={sort?.key === key ? (sort.dir === "asc" ? "ascending" : "descending") : "none"}
       onClick={() => setSort((s) => nextSort(s, key))}
     >
+      {prefix}
       {label}
       {sort?.key === key && <span className="sort-arrow">{sort.dir === "asc" ? "▲" : "▼"}</span>}
     </th>
@@ -99,7 +100,7 @@ export function Overview({ tickers, onAdd, onRemove, onMove }: Props) {
       <table>
         <thead>
           <tr>
-            {header("ticker", "Ticker")}
+            {header("ticker", "Ticker", <AddTicker existing={tickers} onAdd={onAdd} />)}
             {COLUMNS.map((c) => header(c.key, c.label))}
             <th className="remove-col" aria-label="Remove" />
           </tr>
@@ -137,7 +138,6 @@ export function Overview({ tickers, onAdd, onRemove, onMove }: Props) {
           })}
         </tbody>
       </table>
-      <AddTicker existing={tickers} onAdd={onAdd} />
     </div>
   );
 }

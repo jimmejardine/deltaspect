@@ -91,6 +91,7 @@ body {
   position: sticky;
   left: 0;
   z-index: 1;
+  width: 1%; /* shrink to content; the table's spare width goes to the number columns */
   text-align: left;
 }
 
@@ -158,53 +159,47 @@ body {
   color: var(--text);
 }
 
-/* Add ticker */
+/* Add ticker: "+" in the Ticker header, sitting where the row grips are, that opens an input
+   laid over the header cell so the column never widens */
 
-.add-ticker,
-.add-ticker-form button {
-  padding: 8px 16px;
+.add-ticker {
+  margin: -4px 6px -4px -6px;
+  padding: 0 4px;
   border: 1px dashed var(--border);
-  border-radius: 6px;
+  border-radius: 4px;
   background: none;
   color: var(--muted);
-  font: inherit;
+  font-size: 14px;
   font-weight: 600;
+  line-height: 18px;
   cursor: pointer;
 }
 
-.add-ticker:hover,
-.add-ticker-form button:hover {
+.add-ticker:hover {
   color: var(--text);
   border-color: var(--muted);
 }
 
-.add-ticker {
-  display: block;
-  margin: 12px;
-}
-
 .add-ticker-form {
+  position: absolute;
+  inset: 0;
   display: flex;
-  flex-wrap: wrap;
   align-items: center;
-  gap: 8px;
-  margin: 12px;
+  padding: 0 6px;
+  background: var(--panel);
 }
 
 .add-ticker-form input {
-  width: 180px;
-  padding: 8px 10px;
+  width: 100%;
+  min-width: 0;
+  padding: 2px 6px;
   border: 1px solid var(--border);
-  border-radius: 6px;
-  background: var(--panel);
+  border-radius: 4px;
+  background: var(--bg);
   color: var(--text);
   font: inherit;
+  letter-spacing: normal;
   text-transform: uppercase;
-}
-
-.add-ticker-error {
-  color: var(--down);
-  font-size: 12px;
 }
 
 /* ---------- Chart grid: one row per ticker (stats + 1m / 1h / 1d) ---------- */
