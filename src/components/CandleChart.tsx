@@ -122,7 +122,15 @@ export function CandleChart({ candles, emaPoints, interval, visibleBars, loading
         vertLines: { color: "#1c2130" },
         horzLines: { color: "#1c2130" },
       },
-      rightPriceScale: { borderColor: "#262c3d", mode: PriceScaleMode.Logarithmic },
+      rightPriceScale: {
+        borderColor: "#262c3d",
+        mode: PriceScaleMode.Logarithmic,
+        autoScale: true,
+        scaleMargins: { top: 0.08, bottom: 0.08 },
+      },
+      // Manual price-axis dragging would switch auto-fit off; keep the y axis fitted to the visible bars.
+      handleScale: { axisPressedMouseMove: { time: true, price: false } },
+      handleScroll: { vertTouchDrag: false },
       timeScale: {
         borderColor: "#262c3d",
         timeVisible: interval !== "1d",
@@ -161,6 +169,10 @@ export function CandleChart({ candles, emaPoints, interval, visibleBars, loading
     });
     gapRef.current = new EmaGapLabel();
     emaRef.current.attachPrimitive(gapRef.current);
+    // Re-fit the y axis whenever the visible bars change, even if a vertical drag switched auto-fit off.
+    chart.timeScale().subscribeVisibleLogicalRangeChange(() => {
+      chart.priceScale("right").applyOptions({ autoScale: true });
+    });
     chartRef.current = chart;
 
     return () => {

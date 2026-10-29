@@ -3,6 +3,7 @@ import { coinFor, INTERVALS, type IntervalConfig } from "../config";
 import { useAssetCtx } from "../hooks/useAssetCtx";
 import { useCandles } from "../hooks/useCandles";
 import { BAR_SECONDS, ema, EMA_HALF_LIFE_BARS, emaGap } from "../lib/ema";
+import type { Interval } from "../types";
 import { CandleChart } from "./CandleChart";
 import { StatsPanel } from "./StatsPanel";
 
@@ -16,7 +17,12 @@ function useSeries(coin: string, cfg: IntervalConfig) {
   return { cfg, data, emaPoints, gap: emaGap(data.candles, emaPoints) };
 }
 
-export function TickerRow({ ticker }: { ticker: string }) {
+interface Props {
+  ticker: string;
+  visible?: Interval[]; // charts to show; all when omitted. Data for all three keeps streaming.
+}
+
+export function TickerRow({ ticker, visible }: Props) {
   const coin = coinFor(ticker);
   const [m1, h1, d1] = INTERVALS;
   const series = [useSeries(coin, m1), useSeries(coin, h1), useSeries(coin, d1)];
@@ -32,18 +38,20 @@ export function TickerRow({ ticker }: { ticker: string }) {
           gaps={series.map((s) => ({ label: s.cfg.interval, value: s.gap }))}
         />
       </div>
-      {series.map(({ cfg, data, emaPoints }) => (
-        <div className="cell" key={cfg.interval}>
-          <CandleChart
-            candles={data.candles}
-            emaPoints={emaPoints}
-            interval={cfg.interval}
-            visibleBars={cfg.visibleBars}
-            loading={data.loading}
-            error={data.error}
-          />
-        </div>
-      ))}
+      {series
+        .filter((s) => !visible || visible.includes(s.cfg.interval))
+        .map(({ cfg, data, emaPoints }) => (
+          <div className="cell chart-slot" key={cfg.interval}>
+            <CandleChart
+              candles={data.candles}
+              emaPoints={emaPoints}
+              interval={cfg.interval}
+              visibleBars={cfg.visibleBars}
+              loading={data.loading}
+              error={data.error}
+            />
+          </div>
+        ))}
     </>
   );
 }

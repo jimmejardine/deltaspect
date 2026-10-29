@@ -18,7 +18,7 @@ export interface IntervalConfig {
 }
 
 export const INTERVALS: IntervalConfig[] = [
-  { interval: "1m", label: "1 min · live", lookbackMs: 12 * HOUR, visibleBars: 120 },
+  { interval: "1m", label: "1 min", lookbackMs: 12 * HOUR, visibleBars: 120 },
   { interval: "1h", label: "1 hour", lookbackMs: 30 * DAY, visibleBars: 168 },
   { interval: "1d", label: "1 day", lookbackMs: 365 * DAY, visibleBars: 180 },
 ];
