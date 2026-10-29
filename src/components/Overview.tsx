@@ -1,32 +1,42 @@
 import { useState, useSyncExternalStore } from "react";
-import { pct, sign, usd, type TickerStats } from "../lib/stats";
-import { statsStore } from "../lib/statsStore";
+import { INTERVALS } from "../config";
 import { useDragReorder } from "../hooks/useDragReorder";
+import { pct, sign, usd } from "../lib/format";
+import type { TickerStats } from "../lib/stats";
+import { statsStore } from "../lib/statsStore";
 import { AddTicker } from "./AddTicker";
 
-type Key = keyof TickerStats | "ticker";
-
 interface Column {
-  key: Key;
+  key: string;
   label: string;
+  value: (s: TickerStats) => number | null;
   format: (n: number) => string;
   coloured?: boolean; // green/red by sign
 }
 
 const price = (n: number) => `$${usd(n)}`;
+const percent = (n: number) => pct(n);
 
 const COLUMNS: Column[] = [
-  { key: "price", label: "Price", format: price },
-  { key: "change24h", label: "24h", format: (n) => pct(n), coloured: true },
-  { key: "gap1m", label: "EMA 1m", format: (n) => pct(n), coloured: true },
-  { key: "gap1h", label: "EMA 1h", format: (n) => pct(n), coloured: true },
-  { key: "gap1d", label: "EMA 1d", format: (n) => pct(n), coloured: true },
-  { key: "oracle", label: "Oracle", format: price },
-  { key: "basis", label: "Basis", format: (n) => pct(n, 3), coloured: true },
-  { key: "high24h", label: "24h high", format: price },
-  { key: "low24h", label: "24h low", format: price },
-  { key: "prevDay", label: "Prev day", format: price },
+  { key: "price", label: "Price", value: (s) => s.price, format: price },
+  { key: "change24h", label: "24h", value: (s) => s.change24h, format: percent, coloured: true },
+  ...INTERVALS.map(
+    ({ interval }): Column => ({
+      key: `gap-${interval}`,
+      label: `EMA ${interval}`,
+      value: (s) => s.gaps[interval],
+      format: percent,
+      coloured: true,
+    }),
+  ),
+  { key: "oracle", label: "Oracle", value: (s) => s.oracle, format: price },
+  { key: "basis", label: "Basis", value: (s) => s.basis, format: (n) => pct(n, 3), coloured: true },
+  { key: "high24h", label: "24h high", value: (s) => s.high24h, format: price },
+  { key: "low24h", label: "24h low", value: (s) => s.low24h, format: price },
+  { key: "prevDay", label: "Prev day", value: (s) => s.prevDay, format: price },
 ];
+
+type Key = string; // "ticker" or a column key
 
 type Sort = { key: Key; dir: "desc" | "asc" } | null;
 
@@ -41,10 +51,15 @@ function sortTickers(tickers: string[], all: Map<string, TickerStats>, sort: Sor
   if (!sort) return tickers;
   const { key, dir } = sort;
   const mult = dir === "asc" ? 1 : -1;
+  const column = COLUMNS.find((c) => c.key === key);
+  const valueOf = (t: string) => {
+    const stats = all.get(t);
+    return stats && column ? column.value(stats) : null;
+  };
   return [...tickers].sort((a, b) => {
     if (key === "ticker") return mult * a.localeCompare(b);
-    const va = all.get(a)?.[key] ?? null;
-    const vb = all.get(b)?.[key] ?? null;
+    const va = valueOf(a);
+    const vb = valueOf(b);
     if (va == null) return vb == null ? 0 : 1; // missing values always last
     if (vb == null) return -1;
     return mult * (va - vb);
@@ -104,8 +119,8 @@ export function Overview({ tickers, onAdd, onRemove, onMove }: Props) {
                   {/* A plain fragment link, so Back returns to the table without a reload */}
                   <a href={`#${t}`}>{t}</a>
                 </th>
-                {COLUMNS.map(({ key, format, coloured }) => {
-                  const v = stats?.[key as keyof TickerStats] ?? null;
+                {COLUMNS.map(({ key, value, format, coloured }) => {
+                  const v = stats ? value(stats) : null;
                   return (
                     <td key={key} className={coloured && v != null ? sign(v) : ""}>
                       {v == null ? "—" : format(v)}

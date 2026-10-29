@@ -1,12 +1,19 @@
 import { WS_URL } from "../config";
+import type { RawAssetCtx, RawCandle } from "./hyperliquid";
 
 export type Subscription =
   | { type: "candle"; coin: string; interval: string }
   | { type: "activeAssetCtx"; coin: string };
 
+/** The `data` payload delivered for each subscription type. */
+interface Messages {
+  candle: RawCandle;
+  activeAssetCtx: { coin: string; ctx: RawAssetCtx };
+}
+
 export type SocketStatus = "connecting" | "open" | "closed";
 
-type Handler = (data: any) => void;
+type Handler = (data: unknown) => void;
 
 const PING_MS = 30_000;
 const MAX_BACKOFF_MS = 15_000;
@@ -29,23 +36,23 @@ class HlSocket {
   private backoff = 1000;
   private pingTimer: number | undefined;
   private reconnectTimer: number | undefined;
-  lastMessageAt = 0;
 
-  subscribe(sub: Subscription, handler: Handler): () => void {
+  subscribe<S extends Subscription>(sub: S, handler: (data: Messages[S["type"]]) => void): () => void {
     const key = subKey(sub);
+    const h = handler as Handler; // messages are routed by key, so each handler only sees its own type
     let entry = this.subs.get(key);
     if (!entry) {
       entry = { sub, handlers: new Set() };
       this.subs.set(key, entry);
       this.send({ method: "subscribe", subscription: sub });
     }
-    entry.handlers.add(handler);
+    entry.handlers.add(h);
     this.ensureConnected();
 
     return () => {
       const e = this.subs.get(key);
       if (!e) return;
-      e.handlers.delete(handler);
+      e.handlers.delete(h);
       if (e.handlers.size === 0) {
         this.subs.delete(key);
         this.send({ method: "unsubscribe", subscription: sub });
@@ -89,7 +96,6 @@ class HlSocket {
     };
 
     ws.onmessage = (ev) => {
-      this.lastMessageAt = Date.now();
       const msg = JSON.parse(ev.data);
       const { channel, data } = msg;
       let key: string | undefined;

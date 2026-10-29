@@ -1,6 +1,5 @@
 import { useEffect, useState, type FormEvent } from "react";
-import { fetchAssetCtxs } from "../api/hyperliquid";
-import { tickerFor } from "../config";
+import { fetchListedTickers } from "../api/hyperliquid";
 
 interface Props {
   existing: string[];
@@ -16,8 +15,8 @@ export function AddTicker({ existing, onAdd }: Props) {
 
   useEffect(() => {
     if (!open) return;
-    fetchAssetCtxs()
-      .then((all) => setListed([...all.keys()].map(tickerFor).sort()))
+    fetchListedTickers()
+      .then(setListed)
       .catch(() => setError("Couldn't load the symbol list"));
   }, [open]);
 

@@ -1,5 +1,23 @@
-import { DEX, INFO_URL } from "../config";
-import type { AssetCtx, Candle, Interval, RawAssetCtx, RawCandle } from "../types";
+import { DEX, INFO_URL, tickerFor } from "../config";
+import type { AssetCtx, Candle, Interval } from "../types";
+
+/** Raw shapes returned by the Hyperliquid API (numbers arrive as strings). Only the fields we use. */
+export interface RawCandle {
+  t: number; // open time, ms
+  s: string; // coin
+  i: string; // interval
+  o: string;
+  c: string;
+  h: string;
+  l: string;
+  v: string;
+}
+
+export interface RawAssetCtx {
+  markPx: string;
+  oraclePx: string;
+  prevDayPx: string;
+}
 
 const MAX_ATTEMPTS = 6;
 
@@ -34,12 +52,7 @@ export const parseCandle = (c: RawCandle): Candle => ({
 export const parseAssetCtx = (c: RawAssetCtx): AssetCtx => ({
   markPx: +c.markPx,
   oraclePx: +c.oraclePx,
-  midPx: c.midPx == null ? null : +c.midPx,
   prevDayPx: +c.prevDayPx,
-  funding: +c.funding,
-  openInterest: +c.openInterest,
-  dayNtlVlm: +c.dayNtlVlm,
-  premium: c.premium == null ? null : +c.premium,
 });
 
 const inflight = new Map<string, Promise<Candle[]>>();
@@ -63,7 +76,7 @@ export function fetchCandles(coin: string, interval: Interval, lookbackMs: numbe
 
 let ctxsPromise: Promise<Map<string, AssetCtx>> | null = null;
 
-/** Initial stats for every asset on the dex, fetched once and shared by all rows. */
+/** Initial prices for every asset on the dex, fetched once and shared by all rows. */
 export function fetchAssetCtxs(): Promise<Map<string, AssetCtx>> {
   ctxsPromise ??= postInfo<[{ universe: { name: string }[] }, RawAssetCtx[]]>({
     type: "metaAndAssetCtxs",
@@ -75,4 +88,10 @@ export function fetchAssetCtxs(): Promise<Map<string, AssetCtx>> {
       throw err;
     });
   return ctxsPromise;
+}
+
+/** Every ticker listed on the dex (e.g. "TSLA"), sorted; reuses the cached asset request. */
+export async function fetchListedTickers(): Promise<string[]> {
+  const all = await fetchAssetCtxs();
+  return [...all.keys()].map(tickerFor).sort();
 }

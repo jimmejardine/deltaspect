@@ -17,11 +17,9 @@ import {
   type UTCTimestamp,
 } from "lightweight-charts";
 import type { EmaPoint } from "../lib/ema";
+import { pct } from "../lib/format";
+import { theme } from "../theme";
 import type { Candle, Interval } from "../types";
-
-const UP = "#26a69a";
-const DOWN = "#ef5350";
-const EMA_COLOR = "#e0b341";
 
 interface Props {
   candles: Candle[];
@@ -54,7 +52,7 @@ const toBar = (c: Candle) => ({
 const toVolume = (c: Candle) => ({
   time: c.time as UTCTimestamp,
   value: c.volume,
-  color: c.close >= c.open ? `${UP}55` : `${DOWN}55`,
+  color: c.close >= c.open ? `${theme.up}55` : `${theme.down}55`, // 55 = translucent
 });
 
 const toLinePoint = (p: EmaPoint) => ({ time: p.time as UTCTimestamp, value: p.value });
@@ -71,12 +69,9 @@ class EmaGapLabel implements ISeriesPrimitive<Time> {
 
   private readonly view: ISeriesPrimitiveAxisView = {
     coordinate: () => this.series?.priceToCoordinate(this.ema) ?? -1000,
-    text: () => {
-      const diff = (this.close / this.ema - 1) * 100;
-      return `${diff >= 0 ? "+" : ""}${diff.toFixed(2)}%`;
-    },
-    textColor: () => "#0b0e15",
-    backColor: () => EMA_COLOR,
+    text: () => pct(this.close / this.ema - 1),
+    textColor: () => theme.bg,
+    backColor: () => theme.ema,
     visible: () => this.close > 0 && this.ema > 0,
   };
 
@@ -114,16 +109,16 @@ export function CandleChart({ candles, emaPoints, interval, visibleBars, loading
       autoSize: true,
       layout: {
         background: { type: ColorType.Solid, color: "transparent" },
-        textColor: "#8b93a7",
+        textColor: theme.axisText,
         fontSize: 11,
         attributionLogo: false,
       },
       grid: {
-        vertLines: { color: "#1c2130" },
-        horzLines: { color: "#1c2130" },
+        vertLines: { color: theme.grid },
+        horzLines: { color: theme.grid },
       },
       rightPriceScale: {
-        borderColor: "#262c3d",
+        borderColor: theme.border,
         mode: PriceScaleMode.Logarithmic,
         autoScale: true,
         scaleMargins: { top: 0.08, bottom: 0.08 },
@@ -132,7 +127,7 @@ export function CandleChart({ candles, emaPoints, interval, visibleBars, loading
       handleScale: { axisPressedMouseMove: { time: true, price: false } },
       handleScroll: { vertTouchDrag: false },
       timeScale: {
-        borderColor: "#262c3d",
+        borderColor: theme.border,
         timeVisible: interval !== "1d",
         secondsVisible: false,
         tickMarkFormatter: formatTick,
@@ -147,11 +142,11 @@ export function CandleChart({ candles, emaPoints, interval, visibleBars, loading
     });
 
     priceRef.current = chart.addSeries(CandlestickSeries, {
-      upColor: UP,
-      downColor: DOWN,
+      upColor: theme.up,
+      downColor: theme.down,
       borderVisible: false,
-      wickUpColor: UP,
-      wickDownColor: DOWN,
+      wickUpColor: theme.up,
+      wickDownColor: theme.down,
     });
     volumeRef.current = chart.addSeries(HistogramSeries, {
       priceFormat: { type: "volume" },
@@ -161,7 +156,7 @@ export function CandleChart({ candles, emaPoints, interval, visibleBars, loading
     });
     chart.priceScale("").applyOptions({ scaleMargins: { top: 0.8, bottom: 0 } });
     emaRef.current = chart.addSeries(LineSeries, {
-      color: EMA_COLOR,
+      color: theme.ema,
       lineWidth: 2,
       priceLineVisible: false,
       lastValueVisible: false,

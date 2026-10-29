@@ -1,3 +1,6 @@
+/* ---------- Theme & base ---------- */
+
+/* Keep in step with src/theme.ts (used by the canvas charts). */
 :root {
   --bg: #0b0e15;
   --panel: #11151f;
@@ -6,6 +9,7 @@
   --muted: #6b7388;
   --up: #26a69a;
   --down: #ef5350;
+  --ema: #e0b341;
   --row-h: 220px;
   color-scheme: dark;
 }
@@ -14,11 +18,19 @@
   box-sizing: border-box;
 }
 
+html {
+  scroll-behavior: smooth; /* animates the overview's jump-to-row links */
+}
+
 body {
   margin: 0;
   background: var(--bg);
   color: var(--text);
   font: 13px/1.4 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+
+.app {
+  padding-bottom: 48px; /* room for the pinned status pill */
 }
 
 .muted {
@@ -33,41 +45,7 @@ body {
   color: var(--down);
 }
 
-/* Connection status, pinned bottom-right */
-
-.status {
-  position: fixed;
-  right: 12px;
-  bottom: 12px;
-  z-index: 10;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 4px 10px;
-  border: 1px solid var(--border);
-  border-radius: 999px;
-  background: var(--panel);
-  color: var(--muted);
-  font-size: 12px;
-}
-
-.dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: var(--down);
-}
-
-.status-open .dot {
-  background: var(--up);
-  box-shadow: 0 0 6px var(--up);
-}
-
-.status-connecting .dot {
-  background: #e0b341;
-}
-
-/* Overview table above the charts */
+/* ---------- Overview table ---------- */
 
 .overview {
   overflow-x: auto;
@@ -132,96 +110,12 @@ body {
   text-decoration: underline;
 }
 
-/* Jump-to-row targets (#TSLA etc.): animate the scroll, keep clear of the top edge, flash the row */
-
-html {
-  scroll-behavior: smooth;
-}
-
-[data-row] {
-  scroll-margin-top: 8px;
-}
-
-.cell:target {
-  animation: target-flash 1.5s ease-out;
-}
-
-@keyframes target-flash {
-  from {
-    background: rgba(224, 179, 65, 0.25);
-  }
-  to {
-    background: var(--bg);
-  }
-}
-
 .overview tbody tr:hover td,
 .overview tbody tr:hover th {
   background: var(--panel);
 }
 
-/* Grid: header row, then one row per ticker */
-
-.grid {
-  display: grid;
-  grid-template-columns: 260px repeat(3, minmax(0, 1fr));
-  grid-auto-rows: var(--row-h);
-  gap: 1px;
-  background: var(--border);
-  border-bottom: 1px solid var(--border);
-}
-
-
-.cell {
-  position: relative;
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  background: var(--bg);
-}
-
-.chart-cell {
-  position: relative;
-  flex: 1;
-  min-height: 0;
-}
-
-.chart {
-  position: absolute;
-  inset: 0;
-}
-
-.chart-overlay {
-  position: absolute;
-  inset: 0;
-  display: grid;
-  place-items: center;
-  padding: 16px;
-  text-align: center;
-  color: var(--muted);
-  pointer-events: none;
-}
-
-.chart-overlay.error {
-  color: var(--down);
-}
-
-/* Stats column */
-
-.stats {
-  padding: 12px 14px;
-  font-variant-numeric: tabular-nums;
-  overflow: hidden;
-}
-
-.stats-head {
-  display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-  gap: 8px;
-}
-
-/* Watchlist controls in the overview table */
+/* Watchlist controls: drag grip, remove button, dragged-row highlight */
 
 .grip {
   display: inline-block;
@@ -264,6 +158,8 @@ html {
   color: var(--text);
 }
 
+/* Add ticker */
+
 .add-ticker,
 .add-ticker-form button {
   padding: 8px 16px;
@@ -276,20 +172,15 @@ html {
   cursor: pointer;
 }
 
-.add-ticker {
-  display: block;
-  margin: 12px;
-}
-
-/* Leave room under the add button for the pinned status pill */
-.app {
-  padding-bottom: 48px;
-}
-
 .add-ticker:hover,
 .add-ticker-form button:hover {
   color: var(--text);
   border-color: var(--muted);
+}
+
+.add-ticker {
+  display: block;
+  margin: 12px;
 }
 
 .add-ticker-form {
@@ -316,11 +207,111 @@ html {
   font-size: 12px;
 }
 
+/* ---------- Chart grid: one row per ticker (stats + 1m / 1h / 1d) ---------- */
+
+.grid {
+  display: grid;
+  grid-template-columns: 260px repeat(3, minmax(0, 1fr));
+  grid-auto-rows: var(--row-h);
+  gap: 1px;
+  background: var(--border);
+  border-bottom: 1px solid var(--border);
+}
+
+.cell {
+  position: relative;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg);
+}
+
+/* Jump-to-row targets (#TSLA etc.): keep clear of the top edge and flash the row */
+
+[data-row] {
+  scroll-margin-top: 8px;
+}
+
+.cell:target {
+  animation: target-flash 1.5s ease-out;
+}
+
+@keyframes target-flash {
+  from {
+    background: rgba(224, 179, 65, 0.25); /* --ema, translucent */
+  }
+  to {
+    background: var(--bg);
+  }
+}
+
+/* Charts */
+
+.chart-cell {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+}
+
+.chart {
+  position: absolute;
+  inset: 0;
+}
+
+.chart-overlay {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 16px;
+  text-align: center;
+  color: var(--muted);
+  pointer-events: none;
+}
+
+.chart-overlay.error {
+  color: var(--down);
+}
+
+/* Stats panel */
+
+.stats {
+  padding: 12px 14px;
+  font-variant-numeric: tabular-nums;
+  overflow: hidden;
+}
+
+.stats-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 8px;
+}
+
 .stats-ticker {
   font-size: 30px;
   font-weight: 700;
   letter-spacing: 0.08em;
   line-height: 1.1;
+}
+
+.stats-price {
+  margin-right: -4px;
+  padding: 0 4px;
+  font-size: 24px;
+  font-weight: 600;
+  border-radius: 4px;
+  transition: background-color 0.4s;
+}
+
+.stats-price.flash-up {
+  background: rgba(38, 166, 154, 0.25);
+  transition: none;
+}
+
+.stats-price.flash-down {
+  background: rgba(239, 83, 80, 0.25);
+  transition: none;
 }
 
 .gap-pills {
@@ -349,25 +340,6 @@ html {
   background: rgba(239, 83, 80, 0.15);
 }
 
-.stats-price {
-  margin-right: -4px;
-  padding: 0 4px;
-  font-size: 24px;
-  font-weight: 600;
-  border-radius: 4px;
-  transition: background-color 0.4s;
-}
-
-.stats-price.flash-up {
-  background: rgba(38, 166, 154, 0.25);
-  transition: none;
-}
-
-.stats-price.flash-down {
-  background: rgba(239, 83, 80, 0.25);
-  transition: none;
-}
-
 .stats dl {
   display: grid;
   grid-template-columns: auto 1fr;
@@ -384,7 +356,41 @@ html {
   text-align: right;
 }
 
-/* Narrow screens: stats above a single chart, timeframe picked from the tab bar */
+/* ---------- Connection status, pinned bottom-right ---------- */
+
+.status {
+  position: fixed;
+  right: 12px;
+  bottom: 12px;
+  z-index: 10;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--panel);
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--down);
+}
+
+.status-open .dot {
+  background: var(--up);
+  box-shadow: 0 0 6px var(--up);
+}
+
+.status-connecting .dot {
+  background: var(--ema);
+}
+
+/* ---------- Narrow screens: stats above one chart, timeframe picked from the tab bar ---------- */
 
 .tabs {
   position: sticky;
@@ -426,4 +432,5 @@ html {
 
   [data-row] {
     scroll-margin-top: 52px; /* below the sticky tab bar */
-  }}
+  }
+}

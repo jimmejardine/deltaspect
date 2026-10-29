@@ -19,6 +19,8 @@ function useSeries(coin: string, cfg: IntervalConfig) {
   return { cfg, data, emaPoints, gap: emaGap(data.candles, emaPoints) };
 }
 
+type Series = ReturnType<typeof useSeries>;
+
 interface Props {
   ticker: string;
   visible?: Interval[]; // charts to show; all when omitted. Data for all three keeps streaming.
@@ -26,14 +28,12 @@ interface Props {
 
 export function TickerRow({ ticker, visible }: Props) {
   const coin = coinFor(ticker);
-  const [m1, h1, d1] = INTERVALS;
-  const series = [useSeries(coin, m1), useSeries(coin, h1), useSeries(coin, d1)];
+  // INTERVALS is a fixed constant, so this calls the same hooks in the same order every render.
+  const all = INTERVALS.map((cfg) => useSeries(coin, cfg));
+  const series = Object.fromEntries(all.map((s) => [s.cfg.interval, s])) as Record<Interval, Series>;
   const ctx = useAssetCtx(coin);
-  const stats = summarize(
-    ctx,
-    series[1].data.candles,
-    series.map((s) => s.gap),
-  );
+  const gaps = Object.fromEntries(all.map((s) => [s.cfg.interval, s.gap])) as Record<Interval, number | null>;
+  const stats = summarize(ctx, series["1h"].data.candles, gaps);
 
   // Share this row's numbers with the overview table.
   useEffect(() => {
@@ -46,7 +46,7 @@ export function TickerRow({ ticker, visible }: Props) {
       <div className="cell" data-row id={ticker}>
         <StatsPanel ticker={ticker} stats={stats} />
       </div>
-      {series
+      {all
         .filter((s) => !visible || visible.includes(s.cfg.interval))
         .map(({ cfg, data, emaPoints }) => (
           <div className="cell chart-slot" key={cfg.interval}>

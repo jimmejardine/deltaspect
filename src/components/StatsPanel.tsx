@@ -1,5 +1,7 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
-import { pct, sign, usd, type TickerStats } from "../lib/stats";
+import { INTERVALS } from "../config";
+import { pct, sign, usd } from "../lib/format";
+import type { TickerStats } from "../lib/stats";
 
 interface Props {
   ticker: string;
@@ -21,19 +23,18 @@ function useFlash(value: number | undefined) {
   return flash;
 }
 
-function GapPills({ stats }: { stats: TickerStats }) {
-  const gaps = [
-    { label: "1m", value: stats.gap1m },
-    { label: "1h", value: stats.gap1h },
-    { label: "1d", value: stats.gap1d },
-  ];
+/** Price vs EMA for each chart timeframe, in chart order. */
+function GapPills({ gaps }: { gaps: TickerStats["gaps"] }) {
   return (
     <div className="gap-pills">
-      {gaps.map(({ label, value }) => (
-        <span key={label} className={`pill ${value == null ? "" : sign(value)}`} title={`${label} vs EMA`}>
-          {value == null ? "—" : pct(value)}
-        </span>
-      ))}
+      {INTERVALS.map(({ interval }) => {
+        const value = gaps[interval];
+        return (
+          <span key={interval} className={`pill ${value == null ? "" : sign(value)}`} title={`${interval} vs EMA`}>
+            {value == null ? "—" : pct(value)}
+          </span>
+        );
+      })}
     </div>
   );
 }
@@ -56,7 +57,7 @@ export function StatsPanel({ ticker, stats }: Props) {
     return (
       <div className="stats">
         <StatsHead ticker={ticker} />
-        <GapPills stats={stats} />
+        <GapPills gaps={stats.gaps} />
         <div className="muted">Loading…</div>
       </div>
     );
@@ -67,7 +68,7 @@ export function StatsPanel({ ticker, stats }: Props) {
       <StatsHead ticker={ticker}>
         <span className={`stats-price ${flash}`}>${usd(price)}</span>
       </StatsHead>
-      <GapPills stats={stats} />
+      <GapPills gaps={stats.gaps} />
       <dl>
         <dt>24h change</dt>
         <dd className={change24h == null ? "" : sign(change24h)}>{change24h == null ? "—" : pct(change24h)}</dd>

@@ -3,7 +3,7 @@ import { fetchAssetCtxs, parseAssetCtx } from "../api/hyperliquid";
 import { hlSocket } from "../api/hlSocket";
 import type { AssetCtx } from "../types";
 
-/** Mark/oracle/funding/OI stats: seeded from one shared REST call, then live over WebSocket. */
+/** Mark/oracle/prev-day prices: seeded from one shared REST call, then live over WebSocket. */
 export function useAssetCtx(coin: string) {
   const [ctx, setCtx] = useState<AssetCtx | null>(null);
 
