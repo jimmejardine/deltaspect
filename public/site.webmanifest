@@ -1,7 +1,7 @@
 {
   "name": "Deltaspect",
   "short_name": "Deltaspect",
-  "description": "Live charts for Hyperliquid stock perpetuals",
+  "description": "Live charts for stock perpetuals",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#0b0e15",

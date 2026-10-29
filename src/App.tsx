@@ -25,7 +25,7 @@ export default function App() {
 
   return (
     <div className="app">
-      <h1 className="sr-only">Deltaspect: live Hyperliquid stock perp charts</h1>
+      <h1 className="sr-only">Deltaspect: live stock perp charts</h1>
       <Overview tickers={tickers} onAdd={add} onRemove={remove} onMove={move} />
 
       {narrow && (
