@@ -29,8 +29,10 @@ body {
   font: 13px/1.4 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
 }
 
+/* Safe-area insets keep content clear of the notch/home bar when installed as a home-screen app */
 .app {
-  padding-bottom: 48px; /* room for the pinned status pill */
+  padding: env(safe-area-inset-top) env(safe-area-inset-right) 0 env(safe-area-inset-left);
+  padding-bottom: calc(48px + env(safe-area-inset-bottom)); /* room for the pinned status pill */
 }
 
 .muted {
@@ -355,8 +357,8 @@ body {
 
 .pills {
   position: fixed;
-  right: 12px;
-  bottom: 12px;
+  right: calc(12px + env(safe-area-inset-right));
+  bottom: calc(12px + env(safe-area-inset-bottom));
   z-index: 10;
   display: flex;
   gap: 6px;
@@ -403,7 +405,7 @@ body {
 
 .tabs {
   position: sticky;
-  top: 0;
+  top: env(safe-area-inset-top);
   z-index: 5;
   display: flex;
   background: var(--panel);
