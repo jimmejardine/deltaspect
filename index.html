@@ -3,10 +3,76 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Deltaspect</title>
+    <title>Deltaspect: Live Stock Perp Charts &amp; Dashboard</title>
+    <meta
+      name="description"
+      content="Free live dashboard for Hyperliquid stock perpetuals: TSLA, AMD, AAPL, SpaceX, PLTR, NVDA and more. Real-time candle charts, EMA distance, oracle price, basis and 24h range. No sign-up."
+    />
+    <link rel="canonical" href="https://deltaspect.com/" />
+    <meta name="robots" content="index, follow, max-image-preview:large" />
+    <meta name="theme-color" content="#0b0e15" />
+    <meta name="color-scheme" content="dark" />
+
+    <link rel="icon" href="/favicon.ico" sizes="48x48" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="manifest" href="/site.webmanifest" />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Deltaspect" />
+    <meta property="og:url" content="https://deltaspect.com/" />
+    <meta property="og:title" content="Deltaspect: Live Hyperliquid Stock Perp Charts" />
+    <meta
+      property="og:description"
+      content="Live candle charts, EMA distance, oracle price and basis for TSLA, AMD, AAPL, SpaceX and every other stock perp on Hyperliquid."
+    />
+    <meta property="og:image" content="https://deltaspect.com/og-image.jpg" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="Deltaspect overview table and live 1-minute, 1-hour and 1-day charts" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Deltaspect: Live Hyperliquid Stock Perp Charts" />
+    <meta
+      name="twitter:description"
+      content="Live candle charts, EMA distance, oracle price and basis for every stock perp on Hyperliquid."
+    />
+    <meta name="twitter:image" content="https://deltaspect.com/og-image.jpg" />
+
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "WebApplication",
+        "name": "Deltaspect",
+        "url": "https://deltaspect.com/",
+        "description": "Live market dashboard for the stock perpetuals traded on Hyperliquid: real-time candle charts, EMA distance, oracle price, basis and 24h range.",
+        "applicationCategory": "FinanceApplication",
+        "operatingSystem": "Any",
+        "browserRequirements": "Requires JavaScript",
+        "image": "https://deltaspect.com/og-image.jpg",
+        "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+        "sameAs": ["https://github.com/jimmejardine/deltaspect"]
+      }
+    </script>
   </head>
   <body>
-    <div id="root"></div>
+    <div id="root">
+      <!-- Replaced by the app once it loads; this is what crawlers and no-JS visitors see. -->
+      <div class="static-intro">
+        <h1>Deltaspect: live Hyperliquid stock perp charts</h1>
+        <p>
+          A free, real-time dashboard for the stock perpetuals traded on Hyperliquid's xyz market:
+          TSLA, AMD, AAPL, SpaceX (SPCX), PLTR, NVDA, META and more.
+        </p>
+        <ul>
+          <li>Overview table with price, 24h change, distance from the moving average on each timeframe, oracle price, basis and 24h range.</li>
+          <li>Live 1-minute, 1-hour and 1-day candle charts with volume and a 90-period EMA.</li>
+          <li>Your own watchlist: add, remove and reorder tickers, saved in your browser.</li>
+          <li>Runs entirely in the browser on Hyperliquid's public API. No account, no API key.</li>
+        </ul>
+        <noscript><p>Deltaspect needs JavaScript to load live market data.</p></noscript>
+        <p><a href="https://github.com/jimmejardine/deltaspect">Source on GitHub</a></p>
+      </div>
+    </div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

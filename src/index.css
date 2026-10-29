@@ -448,3 +448,30 @@ body {
     scroll-margin-top: 52px; /* below the sticky tab bar */
   }
 }
+
+/* ---------- Static intro in index.html (crawlers, no-JS, before the app mounts) ---------- */
+
+.static-intro {
+  max-width: 640px;
+  margin: 48px auto;
+  padding: 0 16px;
+  color: var(--muted);
+}
+
+.static-intro h1 {
+  color: var(--text);
+  font-size: 20px;
+}
+
+.static-intro a {
+  color: var(--ema);
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
