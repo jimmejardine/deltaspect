@@ -33,3 +33,7 @@ npm run build    # static site in dist/
 ```
 
 The default ticker list and how much history each chart loads are set in `src/config.ts`.
+
+## License
+
+Licensed under the [Apache License 2.0](LICENSE).
