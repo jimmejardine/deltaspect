@@ -6,6 +6,7 @@ import {
   HistogramSeries,
   type IChartApi,
   type ISeriesApi,
+  PriceScaleMode,
   TickMarkType,
   type Time,
   type UTCTimestamp,
@@ -68,7 +69,7 @@ export function CandleChart({ candles, interval, visibleBars, loading, error }: 
         vertLines: { color: "#1c2130" },
         horzLines: { color: "#1c2130" },
       },
-      rightPriceScale: { borderColor: "#262c3d" },
+      rightPriceScale: { borderColor: "#262c3d", mode: PriceScaleMode.Logarithmic },
       timeScale: {
         borderColor: "#262c3d",
         timeVisible: interval !== "1d",

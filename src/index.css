@@ -78,7 +78,7 @@ body {
 
 .grid {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr)) 260px;
+  grid-template-columns: 56px repeat(3, minmax(0, 1fr)) 220px;
   grid-template-rows: auto;
   grid-auto-rows: var(--row-h);
   gap: 1px;
@@ -89,9 +89,24 @@ body {
 .col-head {
   padding: 8px 12px;
   background: var(--panel);
-  color: var(--muted);
-  font-size: 11px;
-  text-transform: uppercase;
+  color: var(--text);
+  font-size: 30px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-align: center;
+}
+
+.ticker-cell {
+  display: grid;
+  place-items: center;
+  background: var(--panel);
+}
+
+.ticker-cell span {
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+  font-size: 30px;
+  font-weight: 700;
   letter-spacing: 0.08em;
 }
 
@@ -101,16 +116,6 @@ body {
   display: flex;
   flex-direction: column;
   background: var(--bg);
-}
-
-.cell-label {
-  position: absolute;
-  top: 6px;
-  left: 10px;
-  z-index: 3;
-  font-size: 11px;
-  color: var(--muted);
-  pointer-events: none;
 }
 
 .chart-cell {
@@ -153,9 +158,8 @@ body {
   align-items: baseline;
 }
 
-.stats-ticker {
-  font-weight: 700;
-  font-size: 15px;
+.stats-head {
+  margin-bottom: 8px;
 }
 
 .stats-change {
@@ -163,7 +167,7 @@ body {
 }
 
 .stats-price {
-  margin: 2px -4px 8px;
+  margin-left: -4px;
   padding: 0 4px;
   font-size: 24px;
   font-weight: 600;
@@ -204,5 +208,15 @@ body {
 
   .col-head {
     display: none;
+  }
+
+  .ticker-cell span {
+    writing-mode: horizontal-tb;
+    transform: none;
+  }
+
+  .grid > .ticker-cell {
+    height: auto;
+    padding: 8px;
   }
 }

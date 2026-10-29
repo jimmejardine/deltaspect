@@ -18,6 +18,7 @@ export default function App() {
       </header>
 
       <main className="grid">
+        <div className="col-head corner" />
         {INTERVALS.map((i) => (
           <div className="col-head" key={i.interval}>
             {i.label}
