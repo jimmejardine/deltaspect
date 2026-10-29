@@ -16,7 +16,7 @@ A live market dashboard for the stock perpetuals traded on Hyperliquid's `xyz` m
 - **Live charts**: 1-minute, 1-hour and 1-day candles per ticker, with volume and a gold moving
   average (an EMA with a 31-bar half-life, equivalent to a 90-period EMA). The gold label on each
   chart's price axis shows how far the price is above or below it.
-- **Phone friendly**: on narrow screens each ticker shows one chart, picked with 1 min / 1 hour / 1 day tabs.
+- **Phone friendly**: on narrow screens each ticker shows one chart, picked with Minutes / Hours / Days tabs.
 
 ## How it works
 
