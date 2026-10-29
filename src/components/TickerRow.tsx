@@ -1,8 +1,10 @@
-import { useMemo, type PointerEventHandler } from "react";
+import { useEffect, useMemo, type PointerEventHandler } from "react";
 import { coinFor, INTERVALS, type IntervalConfig } from "../config";
 import { useAssetCtx } from "../hooks/useAssetCtx";
 import { useCandles } from "../hooks/useCandles";
 import { BAR_SECONDS, ema, EMA_HALF_LIFE_BARS, emaGap } from "../lib/ema";
+import { summarize } from "../lib/stats";
+import { statsStore } from "../lib/statsStore";
 import type { Interval } from "../types";
 import { CandleChart } from "./CandleChart";
 import { StatsPanel } from "./StatsPanel";
@@ -31,15 +33,24 @@ export function TickerRow({ ticker, index, dragging, visible, onRemove, onGripPo
   const [m1, h1, d1] = INTERVALS;
   const series = [useSeries(coin, m1), useSeries(coin, h1), useSeries(coin, d1)];
   const ctx = useAssetCtx(coin);
+  const stats = summarize(
+    ctx,
+    series[1].data.candles,
+    series.map((s) => s.gap),
+  );
+
+  // Share this row's numbers with the overview table.
+  useEffect(() => {
+    statsStore.set(ticker, stats);
+  });
+  useEffect(() => () => statsStore.remove(ticker), [ticker]);
 
   return (
     <>
-      <div className={`cell${dragging ? " dragging" : ""}`} data-row={index}>
+      <div className={`cell${dragging ? " dragging" : ""}`} data-row={index} id={ticker}>
         <StatsPanel
           ticker={ticker}
-          ctx={ctx}
-          hourly={series[1].data.candles}
-          gaps={series.map((s) => ({ label: s.cfg.interval, value: s.gap }))}
+          stats={stats}
           onRemove={onRemove}
           onGripPointerDown={onGripPointerDown}
         />

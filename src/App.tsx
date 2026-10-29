@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { INTERVALS } from "./config";
 import { AddTicker } from "./components/AddTicker";
+import { Overview } from "./components/Overview";
 import { TickerRow } from "./components/TickerRow";
 import { useDragReorder } from "./hooks/useDragReorder";
 import { useMediaQuery } from "./hooks/useMediaQuery";
@@ -18,8 +19,17 @@ export default function App() {
   const { tickers, add, remove, move } = useWatchlist();
   const { draggingIndex, onGripPointerDown } = useDragReorder(move);
 
+  // Opened with a link like /#NVDA: the rows didn't exist when the browser looked for the
+  // anchor, so jump to it now that they've rendered.
+  useEffect(() => {
+    const id = decodeURIComponent(location.hash.slice(1));
+    if (id) document.getElementById(id)?.scrollIntoView();
+  }, []);
+
   return (
     <div className="app">
+      <Overview tickers={tickers} />
+
       {narrow && (
         <nav className="tabs">
           {INTERVALS.map((i) => (
@@ -36,17 +46,6 @@ export default function App() {
       )}
 
       <main className="grid">
-        {!narrow && (
-          <>
-            <div className="col-head" />
-            {INTERVALS.map((i) => (
-              <div className="col-head" key={i.interval}>
-                {i.label}
-              </div>
-            ))}
-          </>
-        )}
-
         {tickers.map((t, i) => (
           <TickerRow
             key={t}

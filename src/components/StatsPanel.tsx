@@ -1,21 +1,12 @@
 import { useEffect, useRef, useState, type PointerEventHandler, type ReactNode } from "react";
-import type { AssetCtx, Candle } from "../types";
+import { pct, sign, usd, type TickerStats } from "../lib/stats";
 
 interface Props {
   ticker: string;
-  ctx: AssetCtx | null;
-  hourly: Candle[];
-  gaps: { label: string; value: number | null }[]; // price vs EMA per chart interval
+  stats: TickerStats;
   onRemove: () => void;
   onGripPointerDown: PointerEventHandler<HTMLElement>;
 }
-
-const usd = (n: number, digits = 2) =>
-  n.toLocaleString(undefined, { minimumFractionDigits: digits, maximumFractionDigits: digits });
-
-const pct = (n: number, digits = 2) => `${n >= 0 ? "+" : ""}${(n * 100).toFixed(digits)}%`;
-
-const sign = (n: number) => (n > 0 ? "up" : n < 0 ? "down" : "");
 
 /** Flashes green/red briefly whenever `value` ticks up or down. */
 function useFlash(value: number | undefined) {
@@ -32,7 +23,12 @@ function useFlash(value: number | undefined) {
   return flash;
 }
 
-function GapPills({ gaps }: { gaps: Props["gaps"] }) {
+function GapPills({ stats }: { stats: TickerStats }) {
+  const gaps = [
+    { label: "1m", value: stats.gap1m },
+    { label: "1h", value: stats.gap1h },
+    { label: "1d", value: stats.gap1d },
+  ];
   return (
     <div className="gap-pills">
       {gaps.map(({ label, value }) => (
@@ -62,44 +58,38 @@ function StatsHead({ ticker, onRemove, onGripPointerDown, children }: HeadProps)
   );
 }
 
-export function StatsPanel({ ticker, ctx, hourly, gaps, onRemove, onGripPointerDown }: Props) {
-  const flash = useFlash(ctx?.markPx);
+export function StatsPanel({ ticker, stats, onRemove, onGripPointerDown }: Props) {
+  const flash = useFlash(stats.price ?? undefined);
   const head = { ticker, onRemove, onGripPointerDown };
+  const { price, change24h, oracle, basis, high24h, low24h, prevDay } = stats;
 
-  if (!ctx) {
+  if (price == null) {
     return (
       <div className="stats">
         <StatsHead {...head} />
-        <GapPills gaps={gaps} />
+        <GapPills stats={stats} />
         <div className="muted">Loading…</div>
       </div>
     );
   }
 
-  const change = ctx.prevDayPx ? ctx.markPx / ctx.prevDayPx - 1 : 0;
-  const basis = ctx.oraclePx ? ctx.markPx / ctx.oraclePx - 1 : 0;
-  const since = Date.now() / 1000 - 24 * 3600;
-  const last24h = hourly.filter((c) => c.time >= since);
-  const high = last24h.length ? Math.max(...last24h.map((c) => c.high)) : null;
-  const low = last24h.length ? Math.min(...last24h.map((c) => c.low)) : null;
-
   return (
     <div className="stats">
       <StatsHead {...head}>
-        <span className={`stats-price ${flash}`}>${usd(ctx.markPx)}</span>
+        <span className={`stats-price ${flash}`}>${usd(price)}</span>
       </StatsHead>
-      <GapPills gaps={gaps} />
+      <GapPills stats={stats} />
       <dl>
         <dt>24h change</dt>
-        <dd className={sign(change)}>{pct(change)}</dd>
+        <dd className={change24h == null ? "" : sign(change24h)}>{change24h == null ? "—" : pct(change24h)}</dd>
         <dt>Oracle</dt>
-        <dd>${usd(ctx.oraclePx)}</dd>
+        <dd>{oracle == null ? "—" : `$${usd(oracle)}`}</dd>
         <dt>Basis</dt>
-        <dd className={sign(basis)}>{pct(basis, 3)}</dd>
+        <dd className={basis == null ? "" : sign(basis)}>{basis == null ? "—" : pct(basis, 3)}</dd>
         <dt>24h high / low</dt>
-        <dd>{high != null && low != null ? `${usd(high)} / ${usd(low)}` : "—"}</dd>
+        <dd>{high24h != null && low24h != null ? `${usd(high24h)} / ${usd(low24h)}` : "—"}</dd>
         <dt>Prev day</dt>
-        <dd>${usd(ctx.prevDayPx)}</dd>
+        <dd>{prevDay == null ? "—" : `$${usd(prevDay)}`}</dd>
       </dl>
     </div>
   );

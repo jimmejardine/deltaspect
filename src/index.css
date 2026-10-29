@@ -67,26 +67,108 @@ body {
   background: #e0b341;
 }
 
+/* Overview table above the charts */
+
+.overview {
+  overflow-x: auto;
+  border-bottom: 1px solid var(--border);
+}
+
+.overview table {
+  width: 100%;
+  border-collapse: collapse;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.overview th,
+.overview td {
+  padding: 6px 12px;
+  text-align: right;
+  border-bottom: 1px solid var(--border);
+}
+
+.overview thead th {
+  background: var(--panel);
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  cursor: pointer;
+  user-select: none;
+}
+
+.overview thead th:hover,
+.overview thead th.sorted {
+  color: var(--text);
+}
+
+.sort-arrow {
+  margin-left: 4px;
+  font-size: 9px;
+}
+
+.overview th:first-child {
+  position: sticky;
+  left: 0;
+  z-index: 1;
+  text-align: left;
+}
+
+.overview tbody th {
+  background: var(--bg);
+}
+
+.overview tbody th a {
+  color: var(--text);
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-decoration: none;
+}
+
+.overview tbody th a:hover {
+  text-decoration: underline;
+}
+
+/* Jump-to-row targets (#TSLA etc.): animate the scroll, keep clear of the top edge, flash the row */
+
+html {
+  scroll-behavior: smooth;
+}
+
+[data-row] {
+  scroll-margin-top: 8px;
+}
+
+.cell:target {
+  animation: target-flash 1.5s ease-out;
+}
+
+@keyframes target-flash {
+  from {
+    background: rgba(224, 179, 65, 0.25);
+  }
+  to {
+    background: var(--bg);
+  }
+}
+
+.overview tbody tr:hover td,
+.overview tbody tr:hover th {
+  background: var(--panel);
+}
+
 /* Grid: header row, then one row per ticker */
 
 .grid {
   display: grid;
   grid-template-columns: 260px repeat(3, minmax(0, 1fr));
-  grid-template-rows: auto;
   grid-auto-rows: var(--row-h);
   gap: 1px;
   background: var(--border);
   border-bottom: 1px solid var(--border);
-}
-
-.col-head {
-  padding: 8px 12px;
-  background: var(--panel);
-  color: var(--text);
-  font-size: 30px;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-align: center;
 }
 
 
@@ -335,4 +417,8 @@ body {
 
   .chart-slot {
     height: var(--row-h);
+  }
+
+  [data-row] {
+    scroll-margin-top: 52px; /* below the sticky tab bar */
   }}
