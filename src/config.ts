@@ -2,8 +2,10 @@ import type { Interval } from "./types";
 
 export const DEX = "xyz";
 
-/** Display tickers; each maps to the `xyz:<TICKER>` perp on Hyperliquid. */
-export const TICKERS = ["TSLA", "AMD", "AAPL", "SPCX", "PLTR"];
+/** Tickers shown until the user edits the list; each maps to the `xyz:<TICKER>` perp on Hyperliquid. */
+export const DEFAULT_TICKERS = ["TSLA", "AMD", "AAPL", "SPCX", "PLTR"];
+
+export const tickerFor = (coin: string) => coin.slice(DEX.length + 1);
 
 export const coinFor = (ticker: string) => `${DEX}:${ticker}`;
 

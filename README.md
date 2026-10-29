@@ -19,5 +19,5 @@ npm run build    # static site in dist/
 
 Edit `src/config.ts`:
 
-- `TICKERS`: symbols listed on the `xyz` dex (e.g. `NVDA`, `MSFT`, `GOOGL`)
+- `DEFAULT_TICKERS`: the starting list. Add, remove and reorder tickers in the page itself; the list is saved in the browser.
 - `INTERVALS`: how much history to fetch for each chart and the initial zoom

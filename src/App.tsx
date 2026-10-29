@@ -1,8 +1,11 @@
 import { useState } from "react";
-import { INTERVALS, TICKERS } from "./config";
+import { INTERVALS } from "./config";
+import { AddTicker } from "./components/AddTicker";
 import { TickerRow } from "./components/TickerRow";
+import { useDragReorder } from "./hooks/useDragReorder";
 import { useMediaQuery } from "./hooks/useMediaQuery";
 import { useSocketStatus } from "./hooks/useSocketStatus";
+import { useWatchlist } from "./hooks/useWatchlist";
 import type { Interval } from "./types";
 
 const STATUS_TEXT = { open: "Live", connecting: "Connecting…", closed: "Disconnected" };
@@ -12,6 +15,8 @@ export default function App() {
   // Narrow screens show one chart per ticker, chosen with a shared tab bar.
   const narrow = useMediaQuery("(max-width: 900px)");
   const [tab, setTab] = useState<Interval>("1m");
+  const { tickers, add, remove, move } = useWatchlist();
+  const { draggingIndex, onGripPointerDown } = useDragReorder(move);
 
   return (
     <div className="app">
@@ -42,10 +47,20 @@ export default function App() {
           </>
         )}
 
-        {TICKERS.map((t) => (
-          <TickerRow key={t} ticker={t} visible={narrow ? [tab] : undefined} />
+        {tickers.map((t, i) => (
+          <TickerRow
+            key={t}
+            ticker={t}
+            index={i}
+            dragging={i === draggingIndex}
+            visible={narrow ? [tab] : undefined}
+            onRemove={() => remove(t)}
+            onGripPointerDown={onGripPointerDown(i)}
+          />
         ))}
       </main>
+
+      <AddTicker existing={tickers} onAdd={add} />
 
       <span className={`status status-${status}`}>
         <span className="dot" /> {STATUS_TEXT[status]}

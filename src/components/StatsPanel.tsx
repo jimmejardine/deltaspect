@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type PointerEventHandler, type ReactNode } from "react";
 import type { AssetCtx, Candle } from "../types";
 
 interface Props {
@@ -6,6 +6,8 @@ interface Props {
   ctx: AssetCtx | null;
   hourly: Candle[];
   gaps: { label: string; value: number | null }[]; // price vs EMA per chart interval
+  onRemove: () => void;
+  onGripPointerDown: PointerEventHandler<HTMLElement>;
 }
 
 const usd = (n: number, digits = 2) =>
@@ -42,15 +44,32 @@ function GapPills({ gaps }: { gaps: Props["gaps"] }) {
   );
 }
 
-export function StatsPanel({ ticker, ctx, hourly, gaps }: Props) {
+/** Ticker row: drag grip, symbol, remove button, and (once loaded) the price. */
+type HeadProps = Pick<Props, "ticker" | "onRemove" | "onGripPointerDown"> & { children?: ReactNode };
+
+function StatsHead({ ticker, onRemove, onGripPointerDown, children }: HeadProps) {
+  return (
+    <div className="stats-head">
+      <span className="grip" title="Drag to reorder" onPointerDown={onGripPointerDown}>
+        ⋮⋮
+      </span>
+      <span className="stats-ticker">{ticker}</span>
+      <button className="remove" title={`Remove ${ticker}`} onClick={onRemove}>
+        ×
+      </button>
+      {children}
+    </div>
+  );
+}
+
+export function StatsPanel({ ticker, ctx, hourly, gaps, onRemove, onGripPointerDown }: Props) {
   const flash = useFlash(ctx?.markPx);
+  const head = { ticker, onRemove, onGripPointerDown };
 
   if (!ctx) {
     return (
       <div className="stats">
-        <div className="stats-head">
-          <span className="stats-ticker">{ticker}</span>
-        </div>
+        <StatsHead {...head} />
         <GapPills gaps={gaps} />
         <div className="muted">Loading…</div>
       </div>
@@ -66,10 +85,9 @@ export function StatsPanel({ ticker, ctx, hourly, gaps }: Props) {
 
   return (
     <div className="stats">
-      <div className="stats-head">
-        <span className="stats-ticker">{ticker}</span>
+      <StatsHead {...head}>
         <span className={`stats-price ${flash}`}>${usd(ctx.markPx)}</span>
-      </div>
+      </StatsHead>
       <GapPills gaps={gaps} />
       <dl>
         <dt>24h change</dt>

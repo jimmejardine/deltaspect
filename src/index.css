@@ -33,11 +33,11 @@ body {
   color: var(--down);
 }
 
-/* Connection status, pinned bottom-left */
+/* Connection status, pinned bottom-right */
 
 .status {
   position: fixed;
-  left: 12px;
+  right: 12px;
   bottom: 12px;
   z-index: 10;
   display: inline-flex;
@@ -137,6 +137,96 @@ body {
   justify-content: space-between;
   align-items: baseline;
   gap: 8px;
+}
+
+.grip {
+  margin-left: -8px;
+  padding: 4px 4px 4px 2px;
+  color: var(--muted);
+  font-size: 18px;
+  letter-spacing: -0.2em;
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+  align-self: center;
+}
+
+.grip:active {
+  cursor: grabbing;
+}
+
+.remove {
+  margin-right: auto;
+  padding: 2px 8px;
+  border: 0;
+  background: none;
+  color: var(--muted);
+  font-size: 24px;
+  line-height: 1;
+  cursor: pointer;
+  align-self: center;
+}
+
+.remove:hover {
+  color: var(--down);
+}
+
+.cell.dragging {
+  background: var(--panel);
+  outline: 1px solid var(--muted);
+  outline-offset: -1px;
+}
+
+.add-ticker,
+.add-ticker-form button {
+  padding: 8px 16px;
+  border: 1px dashed var(--border);
+  border-radius: 6px;
+  background: none;
+  color: var(--muted);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.add-ticker {
+  display: block;
+  margin: 12px;
+}
+
+/* Leave room under the add button for the pinned status pill */
+.app {
+  padding-bottom: 48px;
+}
+
+.add-ticker:hover,
+.add-ticker-form button:hover {
+  color: var(--text);
+  border-color: var(--muted);
+}
+
+.add-ticker-form {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin: 12px;
+}
+
+.add-ticker-form input {
+  width: 180px;
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--panel);
+  color: var(--text);
+  font: inherit;
+  text-transform: uppercase;
+}
+
+.add-ticker-error {
+  color: var(--down);
+  font-size: 12px;
 }
 
 .stats-ticker {
