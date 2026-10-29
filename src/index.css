@@ -78,7 +78,7 @@ body {
 
 .grid {
   display: grid;
-  grid-template-columns: 56px repeat(3, minmax(0, 1fr)) 220px;
+  grid-template-columns: 220px repeat(3, minmax(0, 1fr));
   grid-template-rows: auto;
   grid-auto-rows: var(--row-h);
   gap: 1px;
@@ -96,19 +96,6 @@ body {
   text-align: center;
 }
 
-.ticker-cell {
-  display: grid;
-  place-items: center;
-  background: var(--panel);
-}
-
-.ticker-cell span {
-  writing-mode: vertical-rl;
-  transform: rotate(180deg);
-  font-size: 30px;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-}
 
 .cell {
   position: relative;
@@ -162,6 +149,13 @@ body {
   margin-bottom: 8px;
 }
 
+.stats-ticker {
+  font-size: 30px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  line-height: 1.1;
+}
+
 .stats-change {
   font-weight: 600;
 }
@@ -208,15 +202,4 @@ body {
 
   .col-head {
     display: none;
-  }
-
-  .ticker-cell span {
-    writing-mode: horizontal-tb;
-    transform: none;
-  }
-
-  .grid > .ticker-cell {
-    height: auto;
-    padding: 8px;
-  }
-}
+  }}

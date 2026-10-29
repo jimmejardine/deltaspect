@@ -16,8 +16,8 @@ export function TickerRow({ ticker }: { ticker: string }) {
 
   return (
     <>
-      <div className="ticker-cell">
-        <span>{ticker}</span>
+      <div className="cell">
+        <StatsPanel ticker={ticker} ctx={ctx} hourly={series[1].data.candles} />
       </div>
       {series.map(({ cfg, data }) => (
         <div className="cell" key={cfg.interval}>
@@ -30,9 +30,6 @@ export function TickerRow({ ticker }: { ticker: string }) {
           />
         </div>
       ))}
-      <div className="cell">
-        <StatsPanel ctx={ctx} hourly={series[1].data.candles} />
-      </div>
     </>
   );
 }

@@ -18,13 +18,12 @@ export default function App() {
       </header>
 
       <main className="grid">
-        <div className="col-head corner" />
+        <div className="col-head">Stats</div>
         {INTERVALS.map((i) => (
           <div className="col-head" key={i.interval}>
             {i.label}
           </div>
         ))}
-        <div className="col-head">Stats</div>
 
         {TICKERS.map((t) => (
           <TickerRow key={t} ticker={t} />

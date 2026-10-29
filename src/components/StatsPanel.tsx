@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import type { AssetCtx, Candle } from "../types";
 
 interface Props {
+  ticker: string;
   ctx: AssetCtx | null;
   hourly: Candle[];
 }
@@ -28,12 +29,13 @@ function useFlash(value: number | undefined) {
   return flash;
 }
 
-export function StatsPanel({ ctx, hourly }: Props) {
+export function StatsPanel({ ticker, ctx, hourly }: Props) {
   const flash = useFlash(ctx?.markPx);
 
   if (!ctx) {
     return (
       <div className="stats">
+        <div className="stats-ticker">{ticker}</div>
         <div className="muted">Loading…</div>
       </div>
     );
@@ -48,6 +50,7 @@ export function StatsPanel({ ctx, hourly }: Props) {
 
   return (
     <div className="stats">
+      <div className="stats-ticker">{ticker}</div>
       <div className="stats-head">
         <span className={`stats-price ${flash}`}>${usd(ctx.markPx)}</span>
         <span className={`stats-change ${sign(change)}`}>{pct(change)}</span>
