@@ -1,4 +1,4 @@
-import { useEffect, useMemo, type PointerEventHandler } from "react";
+import { useEffect, useMemo } from "react";
 import { coinFor, INTERVALS, type IntervalConfig } from "../config";
 import { useAssetCtx } from "../hooks/useAssetCtx";
 import { useCandles } from "../hooks/useCandles";
@@ -21,14 +21,10 @@ function useSeries(coin: string, cfg: IntervalConfig) {
 
 interface Props {
   ticker: string;
-  index: number;
-  dragging: boolean;
   visible?: Interval[]; // charts to show; all when omitted. Data for all three keeps streaming.
-  onRemove: () => void;
-  onGripPointerDown: PointerEventHandler<HTMLElement>;
 }
 
-export function TickerRow({ ticker, index, dragging, visible, onRemove, onGripPointerDown }: Props) {
+export function TickerRow({ ticker, visible }: Props) {
   const coin = coinFor(ticker);
   const [m1, h1, d1] = INTERVALS;
   const series = [useSeries(coin, m1), useSeries(coin, h1), useSeries(coin, d1)];
@@ -47,13 +43,8 @@ export function TickerRow({ ticker, index, dragging, visible, onRemove, onGripPo
 
   return (
     <>
-      <div className={`cell${dragging ? " dragging" : ""}`} data-row={index} id={ticker}>
-        <StatsPanel
-          ticker={ticker}
-          stats={stats}
-          onRemove={onRemove}
-          onGripPointerDown={onGripPointerDown}
-        />
+      <div className="cell" data-row id={ticker}>
+        <StatsPanel ticker={ticker} stats={stats} />
       </div>
       {series
         .filter((s) => !visible || visible.includes(s.cfg.interval))

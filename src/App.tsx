@@ -1,9 +1,7 @@
 import { useEffect, useState } from "react";
 import { INTERVALS } from "./config";
-import { AddTicker } from "./components/AddTicker";
 import { Overview } from "./components/Overview";
 import { TickerRow } from "./components/TickerRow";
-import { useDragReorder } from "./hooks/useDragReorder";
 import { useMediaQuery } from "./hooks/useMediaQuery";
 import { useSocketStatus } from "./hooks/useSocketStatus";
 import { useWatchlist } from "./hooks/useWatchlist";
@@ -17,7 +15,6 @@ export default function App() {
   const narrow = useMediaQuery("(max-width: 900px)");
   const [tab, setTab] = useState<Interval>("1m");
   const { tickers, add, remove, move } = useWatchlist();
-  const { draggingIndex, onGripPointerDown } = useDragReorder(move);
 
   // Opened with a link like /#NVDA: the rows didn't exist when the browser looked for the
   // anchor, so jump to it now that they've rendered.
@@ -28,7 +25,7 @@ export default function App() {
 
   return (
     <div className="app">
-      <Overview tickers={tickers} />
+      <Overview tickers={tickers} onAdd={add} onRemove={remove} onMove={move} />
 
       {narrow && (
         <nav className="tabs">
@@ -46,20 +43,10 @@ export default function App() {
       )}
 
       <main className="grid">
-        {tickers.map((t, i) => (
-          <TickerRow
-            key={t}
-            ticker={t}
-            index={i}
-            dragging={i === draggingIndex}
-            visible={narrow ? [tab] : undefined}
-            onRemove={() => remove(t)}
-            onGripPointerDown={onGripPointerDown(i)}
-          />
+        {tickers.map((t) => (
+          <TickerRow key={t} ticker={t} visible={narrow ? [tab] : undefined} />
         ))}
       </main>
-
-      <AddTicker existing={tickers} onAdd={add} />
 
       <span className={`status status-${status}`}>
         <span className="dot" /> {STATUS_TEXT[status]}

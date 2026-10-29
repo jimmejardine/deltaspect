@@ -2,10 +2,10 @@ import { useCallback, useState, type PointerEvent } from "react";
 
 /**
  * Drag-to-reorder from a grip handle, using pointer events so it works with mouse and touch.
- * Rows are found by their `[data-row]` elements; the dragged row moves as soon as the pointer
- * passes the top of another row.
+ * Rows are the elements matching `rowSelector`, in list order; the dragged row moves as soon as
+ * the pointer passes the top of another row.
  */
-export function useDragReorder(move: (from: number, to: number) => void) {
+export function useDragReorder(move: (from: number, to: number) => void, rowSelector: string) {
   const [draggingIndex, setDraggingIndex] = useState<number | null>(null);
 
   const onGripPointerDown = useCallback(
@@ -17,7 +17,7 @@ export function useDragReorder(move: (from: number, to: number) => void) {
       setDraggingIndex(current);
 
       const onMove = (ev: globalThis.PointerEvent) => {
-        const tops = [...document.querySelectorAll<HTMLElement>("[data-row]")].map(
+        const tops = [...document.querySelectorAll<HTMLElement>(rowSelector)].map(
           (el) => el.getBoundingClientRect().top,
         );
         let target = 0;
@@ -42,7 +42,7 @@ export function useDragReorder(move: (from: number, to: number) => void) {
       grip.addEventListener("pointerup", onEnd);
       grip.addEventListener("pointercancel", onEnd);
     },
-    [move],
+    [move, rowSelector],
   );
 
   return { draggingIndex, onGripPointerDown };

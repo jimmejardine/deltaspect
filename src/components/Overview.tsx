@@ -1,6 +1,8 @@
 import { useState, useSyncExternalStore } from "react";
 import { pct, sign, usd, type TickerStats } from "../lib/stats";
 import { statsStore } from "../lib/statsStore";
+import { useDragReorder } from "../hooks/useDragReorder";
+import { AddTicker } from "./AddTicker";
 
 type Key = keyof TickerStats | "ticker";
 
@@ -49,10 +51,21 @@ function sortTickers(tickers: string[], all: Map<string, TickerStats>, sort: Sor
   });
 }
 
-/** Sortable table of every ticker's stats; click a header to sort, a ticker to jump to its charts. */
-export function Overview({ tickers }: { tickers: string[] }) {
+interface Props {
+  tickers: string[]; // watchlist order
+  onAdd: (ticker: string) => void;
+  onRemove: (ticker: string) => void;
+  onMove: (from: number, to: number) => void;
+}
+
+/**
+ * Sortable table of every ticker's stats, and where the watchlist is managed: drag the grip to
+ * reorder, × to remove, + to add. Click a header to sort, a ticker to jump to its charts.
+ */
+export function Overview({ tickers, onAdd, onRemove, onMove }: Props) {
   const all = useSyncExternalStore(statsStore.subscribe, statsStore.getSnapshot);
   const [sort, setSort] = useState<Sort>(null);
+  const { draggingIndex, onGripPointerDown } = useDragReorder(onMove, "[data-drag-row]");
 
   const header = (key: Key, label: string) => (
     <th
@@ -73,14 +86,21 @@ export function Overview({ tickers }: { tickers: string[] }) {
           <tr>
             {header("ticker", "Ticker")}
             {COLUMNS.map((c) => header(c.key, c.label))}
+            <th className="remove-col" aria-label="Remove" />
           </tr>
         </thead>
         <tbody>
-          {sortTickers(tickers, all, sort).map((t) => {
+          {sortTickers(tickers, all, sort).map((t, i) => {
             const stats = all.get(t);
             return (
-              <tr key={t}>
+              // Drag-reordering only applies in watchlist order, so grips hide while sorted.
+              <tr key={t} data-drag-row className={i === draggingIndex ? "dragging" : ""}>
                 <th scope="row">
+                  {!sort && (
+                    <span className="grip" title="Drag to reorder" onPointerDown={onGripPointerDown(i)}>
+                      ⋮⋮
+                    </span>
+                  )}
                   {/* A plain fragment link, so Back returns to the table without a reload */}
                   <a href={`#${t}`}>{t}</a>
                 </th>
@@ -92,11 +112,17 @@ export function Overview({ tickers }: { tickers: string[] }) {
                     </td>
                   );
                 })}
+                <td className="remove-col">
+                  <button className="remove" title={`Remove ${t}`} onClick={() => onRemove(t)}>
+                    ×
+                  </button>
+                </td>
               </tr>
             );
           })}
         </tbody>
       </table>
+      <AddTicker existing={tickers} onAdd={onAdd} />
     </div>
   );
 }

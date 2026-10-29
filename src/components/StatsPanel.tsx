@@ -1,11 +1,9 @@
-import { useEffect, useRef, useState, type PointerEventHandler, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { pct, sign, usd, type TickerStats } from "../lib/stats";
 
 interface Props {
   ticker: string;
   stats: TickerStats;
-  onRemove: () => void;
-  onGripPointerDown: PointerEventHandler<HTMLElement>;
 }
 
 /** Flashes green/red briefly whenever `value` ticks up or down. */
@@ -40,33 +38,24 @@ function GapPills({ stats }: { stats: TickerStats }) {
   );
 }
 
-/** Ticker row: drag grip, symbol, remove button, and (once loaded) the price. */
-type HeadProps = Pick<Props, "ticker" | "onRemove" | "onGripPointerDown"> & { children?: ReactNode };
-
-function StatsHead({ ticker, onRemove, onGripPointerDown, children }: HeadProps) {
+/** Ticker symbol and (once loaded) the price. */
+function StatsHead({ ticker, children }: { ticker: string; children?: ReactNode }) {
   return (
     <div className="stats-head">
-      <span className="grip" title="Drag to reorder" onPointerDown={onGripPointerDown}>
-        ⋮⋮
-      </span>
       <span className="stats-ticker">{ticker}</span>
-      <button className="remove" title={`Remove ${ticker}`} onClick={onRemove}>
-        ×
-      </button>
       {children}
     </div>
   );
 }
 
-export function StatsPanel({ ticker, stats, onRemove, onGripPointerDown }: Props) {
+export function StatsPanel({ ticker, stats }: Props) {
   const flash = useFlash(stats.price ?? undefined);
-  const head = { ticker, onRemove, onGripPointerDown };
   const { price, change24h, oracle, basis, high24h, low24h, prevDay } = stats;
 
   if (price == null) {
     return (
       <div className="stats">
-        <StatsHead {...head} />
+        <StatsHead ticker={ticker} />
         <GapPills stats={stats} />
         <div className="muted">Loading…</div>
       </div>
@@ -75,7 +64,7 @@ export function StatsPanel({ ticker, stats, onRemove, onGripPointerDown }: Props
 
   return (
     <div className="stats">
-      <StatsHead {...head}>
+      <StatsHead ticker={ticker}>
         <span className={`stats-price ${flash}`}>${usd(price)}</span>
       </StatsHead>
       <GapPills stats={stats} />
