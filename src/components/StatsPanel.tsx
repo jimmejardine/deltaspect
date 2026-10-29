@@ -5,6 +5,7 @@ interface Props {
   ticker: string;
   ctx: AssetCtx | null;
   hourly: Candle[];
+  gaps: { label: string; value: number | null }[]; // price vs EMA per chart interval
 }
 
 const usd = (n: number, digits = 2) =>
@@ -29,13 +30,28 @@ function useFlash(value: number | undefined) {
   return flash;
 }
 
-export function StatsPanel({ ticker, ctx, hourly }: Props) {
+function GapPills({ gaps }: { gaps: Props["gaps"] }) {
+  return (
+    <div className="gap-pills">
+      {gaps.map(({ label, value }) => (
+        <span key={label} className={`pill ${value == null ? "" : sign(value)}`} title={`${label} vs EMA`}>
+          {value == null ? "—" : pct(value)}
+        </span>
+      ))}
+    </div>
+  );
+}
+
+export function StatsPanel({ ticker, ctx, hourly, gaps }: Props) {
   const flash = useFlash(ctx?.markPx);
 
   if (!ctx) {
     return (
       <div className="stats">
-        <div className="stats-ticker">{ticker}</div>
+        <div className="stats-head">
+          <span className="stats-ticker">{ticker}</span>
+        </div>
+        <GapPills gaps={gaps} />
         <div className="muted">Loading…</div>
       </div>
     );
@@ -50,12 +66,14 @@ export function StatsPanel({ ticker, ctx, hourly }: Props) {
 
   return (
     <div className="stats">
-      <div className="stats-ticker">{ticker}</div>
       <div className="stats-head">
+        <span className="stats-ticker">{ticker}</span>
         <span className={`stats-price ${flash}`}>${usd(ctx.markPx)}</span>
-        <span className={`stats-change ${sign(change)}`}>{pct(change)}</span>
       </div>
+      <GapPills gaps={gaps} />
       <dl>
+        <dt>24h change</dt>
+        <dd className={sign(change)}>{pct(change)}</dd>
         <dt>Oracle</dt>
         <dd>${usd(ctx.oraclePx)}</dd>
         <dt>Basis</dt>

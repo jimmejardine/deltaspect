@@ -78,7 +78,7 @@ body {
 
 .grid {
   display: grid;
-  grid-template-columns: 220px repeat(3, minmax(0, 1fr));
+  grid-template-columns: 260px repeat(3, minmax(0, 1fr));
   grid-template-rows: auto;
   grid-auto-rows: var(--row-h);
   gap: 1px;
@@ -143,10 +143,7 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: baseline;
-}
-
-.stats-head {
-  margin-bottom: 8px;
+  gap: 8px;
 }
 
 .stats-ticker {
@@ -156,12 +153,34 @@ body {
   line-height: 1.1;
 }
 
-.stats-change {
+.gap-pills {
+  display: flex;
+  gap: 4px;
+  margin: 4px 0 6px;
+}
+
+.pill {
+  padding: 1px 7px;
+  border-radius: 999px;
+  font-size: 12px;
   font-weight: 600;
+  white-space: nowrap;
+  color: var(--muted);
+  background: rgba(107, 115, 136, 0.15);
+}
+
+.pill.up {
+  color: var(--up);
+  background: rgba(38, 166, 154, 0.15);
+}
+
+.pill.down {
+  color: var(--down);
+  background: rgba(239, 83, 80, 0.15);
 }
 
 .stats-price {
-  margin-left: -4px;
+  margin-right: -4px;
   padding: 0 4px;
   font-size: 24px;
   font-weight: 600;

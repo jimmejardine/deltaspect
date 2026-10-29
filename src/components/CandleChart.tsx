@@ -16,17 +16,16 @@ import {
   type Time,
   type UTCTimestamp,
 } from "lightweight-charts";
+import type { EmaPoint } from "../lib/ema";
 import type { Candle, Interval } from "../types";
 
 const UP = "#26a69a";
 const DOWN = "#ef5350";
 const EMA_COLOR = "#e0b341";
-// Same average lag as a 90-bar simple moving average: decay 89/91 per bar, ln(0.5) / ln(89/91) ≈ 31.
-const EMA_HALF_LIFE_BARS = 31;
-const BAR_SECONDS: Record<Interval, number> = { "1m": 60, "1h": 3600, "1d": 86400 };
 
 interface Props {
   candles: Candle[];
+  emaPoints: EmaPoint[];
   interval: Interval;
   visibleBars: number;
   loading: boolean;
@@ -58,24 +57,7 @@ const toVolume = (c: Candle) => ({
   color: c.close >= c.open ? `${UP}55` : `${DOWN}55`,
 });
 
-/**
- * Half-life EMA of closes: ema = alpha * ema + (1 - alpha) * close, alpha = 0.5 ^ (bars elapsed / halfLife).
- * A bar still forming counts only the elapsed fraction of its length, so the line glides with each
- * tick and lands on the full-bar value exactly when the bar closes.
- */
-function ema(candles: Candle[], halfLifeBars: number, barSeconds: number) {
-  if (candles.length === 0) return [];
-  const now = Date.now() / 1000;
-  let value = candles[0].close;
-  return candles.map((c, i) => {
-    if (i > 0) {
-      const elapsed = Math.min(Math.max((now - c.time) / barSeconds, 0), 1);
-      const alpha = 0.5 ** (elapsed / halfLifeBars);
-      value = alpha * value + (1 - alpha) * c.close;
-    }
-    return { time: c.time as UTCTimestamp, value };
-  });
-}
+const toLinePoint = (p: EmaPoint) => ({ time: p.time as UTCTimestamp, value: p.value });
 
 /**
  * Gold price-axis label at the EMA's level showing how far the latest price is from it, e.g. "+1.24%".
@@ -118,7 +100,7 @@ class EmaGapLabel implements ISeriesPrimitive<Time> {
   }
 }
 
-export function CandleChart({ candles, interval, visibleBars, loading, error }: Props) {
+export function CandleChart({ candles, emaPoints, interval, visibleBars, loading, error }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
   const chartRef = useRef<IChartApi | null>(null);
   const priceRef = useRef<ISeriesApi<"Candlestick"> | null>(null);
@@ -196,8 +178,7 @@ export function CandleChart({ candles, interval, visibleBars, loading, error }: 
     if (!price || !volume || !emaLine) return;
     const prev = prevRef.current;
     prevRef.current = candles;
-    if (candles.length === 0) return;
-    const emaPoints = ema(candles, EMA_HALF_LIFE_BARS, BAR_SECONDS[interval]);
+    if (candles.length === 0 || emaPoints.length === 0) return;
     gapRef.current?.set(candles[candles.length - 1].close, emaPoints[emaPoints.length - 1].value);
 
     // A live tick only touches the last bar (or appends one): update incrementally so the
@@ -212,17 +193,17 @@ export function CandleChart({ candles, interval, visibleBars, loading, error }: 
       price.update(toBar(last));
       volume.update(toVolume(last));
       const lastEma = emaPoints[emaPoints.length - 1];
-      if (lastEma?.time === last.time) emaLine.update(lastEma);
+      if (lastEma?.time === last.time) emaLine.update(toLinePoint(lastEma));
     } else {
       price.setData(candles.map(toBar));
       volume.setData(candles.map(toVolume));
-      emaLine.setData(emaPoints);
+      emaLine.setData(emaPoints.map(toLinePoint));
       chartRef.current?.timeScale().setVisibleLogicalRange({
         from: candles.length - visibleBars,
         to: candles.length + 2,
       });
     }
-  }, [candles, interval, visibleBars]);
+  }, [candles, emaPoints, visibleBars]);
 
   return (
     <div className="chart-cell">
