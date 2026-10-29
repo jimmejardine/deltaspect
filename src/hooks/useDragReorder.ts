@@ -3,7 +3,8 @@ import { useCallback, useState, type PointerEvent } from "react";
 /**
  * Drag-to-reorder from a grip handle, using pointer events so it works with mouse and touch.
  * Rows are the elements matching `rowSelector`, in list order; the dragged row moves as soon as
- * the pointer passes the top of another row.
+ * the pointer passes the top of another row. Move/up listeners live on the window rather than the
+ * grip: React re-inserts the dragged row's DOM node when it moves down, which drops pointer capture.
  */
 export function useDragReorder(move: (from: number, to: number) => void, rowSelector: string) {
   const [draggingIndex, setDraggingIndex] = useState<number | null>(null);
@@ -11,12 +12,12 @@ export function useDragReorder(move: (from: number, to: number) => void, rowSele
   const onGripPointerDown = useCallback(
     (index: number) => (e: PointerEvent<HTMLElement>) => {
       e.preventDefault();
-      const grip = e.currentTarget;
-      grip.setPointerCapture(e.pointerId);
+      const { pointerId } = e;
       let current = index;
       setDraggingIndex(current);
 
       const onMove = (ev: globalThis.PointerEvent) => {
+        if (ev.pointerId !== pointerId) return;
         const tops = [...document.querySelectorAll<HTMLElement>(rowSelector)].map(
           (el) => el.getBoundingClientRect().top,
         );
@@ -31,16 +32,17 @@ export function useDragReorder(move: (from: number, to: number) => void, rowSele
         }
       };
 
-      const onEnd = () => {
-        grip.removeEventListener("pointermove", onMove);
-        grip.removeEventListener("pointerup", onEnd);
-        grip.removeEventListener("pointercancel", onEnd);
+      const onEnd = (ev: globalThis.PointerEvent) => {
+        if (ev.pointerId !== pointerId) return;
+        window.removeEventListener("pointermove", onMove);
+        window.removeEventListener("pointerup", onEnd);
+        window.removeEventListener("pointercancel", onEnd);
         setDraggingIndex(null);
       };
 
-      grip.addEventListener("pointermove", onMove);
-      grip.addEventListener("pointerup", onEnd);
-      grip.addEventListener("pointercancel", onEnd);
+      window.addEventListener("pointermove", onMove);
+      window.addEventListener("pointerup", onEnd);
+      window.addEventListener("pointercancel", onEnd);
     },
     [move, rowSelector],
   );
