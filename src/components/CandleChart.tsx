@@ -103,9 +103,21 @@ export function CandleChart({ candles, emaPoints, interval, visibleBars, loading
   const emaRef = useRef<ISeriesApi<"Line"> | null>(null);
   const gapRef = useRef<EmaGapLabel | null>(null);
   const prevRef = useRef<Candle[]>([]);
+  const visibleBarsRef = useRef(visibleBars);
+  visibleBarsRef.current = visibleBars;
+
+  /** Default view: the latest `visibleBars` bars plus a little right padding, y axis fitted. Uses refs only. */
+  const resetView = () => {
+    const chart = chartRef.current;
+    const n = prevRef.current.length;
+    if (!chart || n === 0) return;
+    chart.timeScale().setVisibleLogicalRange({ from: n - visibleBarsRef.current, to: n + 2 });
+    chart.priceScale("right").applyOptions({ autoScale: true });
+  };
 
   useEffect(() => {
-    const chart = createChart(containerRef.current!, {
+    const container = containerRef.current!;
+    const chart = createChart(container, {
       autoSize: true,
       layout: {
         background: { type: ColorType.Solid, color: "transparent" },
@@ -169,8 +181,11 @@ export function CandleChart({ candles, emaPoints, interval, visibleBars, loading
       chart.priceScale("right").applyOptions({ autoScale: true });
     });
     chartRef.current = chart;
+    // Double-click anywhere on the chart to undo panning/zooming.
+    container.addEventListener("dblclick", resetView);
 
     return () => {
+      container.removeEventListener("dblclick", resetView);
       chart.remove();
       chartRef.current = priceRef.current = volumeRef.current = emaRef.current = null;
       gapRef.current = null;
@@ -205,10 +220,7 @@ export function CandleChart({ candles, emaPoints, interval, visibleBars, loading
       price.setData(candles.map(toBar));
       volume.setData(candles.map(toVolume));
       emaLine.setData(emaPoints.map(toLinePoint));
-      chartRef.current?.timeScale().setVisibleLogicalRange({
-        from: candles.length - visibleBars,
-        to: candles.length + 2,
-      });
+      resetView();
     }
   }, [candles, emaPoints, visibleBars]);
 
